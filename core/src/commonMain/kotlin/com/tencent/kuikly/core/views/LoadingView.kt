@@ -16,6 +16,7 @@
 package com.tencent.kuikly.core.views
 
 import com.tencent.kuikly.core.base.Color
+import com.tencent.kuikly.core.base.Scale
 import com.tencent.kuikly.core.base.ViewContainer
 import com.tencent.kuikly.core.directives.vif
 import com.tencent.kuikly.core.pager.Pager
@@ -122,5 +123,47 @@ fun ViewContainer<*, *>.Loading(
             grayStyle = grayStyle,
             scale = scale,
         )
+    }
+}
+
+/**
+ * 无状态 Loading 遮罩，直接渲染（不含显隐控制）。
+ * 如需状态管理，请使用 [LoadingController] + [Loading] 重载。
+ *
+ * @param fullScreen  true = 全屏（通过 Modal 挂到顶层）；false = 局部（覆盖父容器，默认）
+ * @param maskColor   遮罩背景色，默认半透明黑色；传 null 不显示蒙版
+ * @param grayStyle   true = 灰色菊花；false = 白色菊花（默认）
+ * @param scale       菊花缩放倍数，默认 1f（20×20pt）；传 2f 则为 40×40pt
+ */
+fun ViewContainer<*, *>.Loading(
+    fullScreen: Boolean = false,
+    maskColor: Color? = Color(0, 0, 0, 0.3f),
+    grayStyle: Boolean = false,
+    scale: Float = 1f,
+) {
+    val indicator: ViewContainer<*, *>.() -> Unit = {
+        View {
+            attr {
+                absolutePosition(0f, 0f, 0f, 0f)
+                if (maskColor != null) {
+                    backgroundColor(maskColor)
+                }
+                allCenter()
+            }
+            event { click {} }
+            ActivityIndicator {
+                attr {
+                    isGrayStyle(grayStyle)
+                    if (scale != 1f) {
+                        transform(Scale(scale, scale))
+                    }
+                }
+            }
+        }
+    }
+    if (fullScreen) {
+        Modal { indicator(this) }
+    } else {
+        indicator(this)
     }
 }
